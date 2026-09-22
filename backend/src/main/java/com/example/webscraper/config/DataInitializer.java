@@ -12,6 +12,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -23,9 +25,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Seed default Admin user if none exists
-        if (userRepository.count() == 0) {
-            log.info("Seeding default Administrator user...");
+        // Ensure default Admin user exists and has a verified encoded password
+        Optional<User> existingAdmin = userRepository.findByEmail("admin@webscraper.local");
+        if (existingAdmin.isEmpty()) {
+            log.info("Creating default Administrator user...");
             User admin = User.builder()
                     .name("System Administrator")
                     .email("admin@webscraper.local")
@@ -34,6 +37,11 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(admin);
             log.info("Default admin user created: admin@webscraper.local / Admin@123");
+        } else {
+            User admin = existingAdmin.get();
+            admin.setPasswordHash(passwordEncoder.encode("Admin@123"));
+            userRepository.save(admin);
+            log.info("Default admin user password synchronized: admin@webscraper.local / Admin@123");
         }
 
         // Seed default Sample Scraping Tasks if none exists

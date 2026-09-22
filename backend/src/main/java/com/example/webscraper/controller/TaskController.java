@@ -1,12 +1,17 @@
 package com.example.webscraper.controller;
 
+import com.example.webscraper.dto.config.ExtractionConfigDto;
 import com.example.webscraper.dto.request.CreateTaskRequest;
+import com.example.webscraper.dto.request.TestScrapeRequest;
 import com.example.webscraper.dto.request.UpdateTaskRequest;
 import com.example.webscraper.dto.response.ApiResponse;
 import com.example.webscraper.dto.response.PageResponse;
 import com.example.webscraper.dto.response.TaskResponse;
+import com.example.webscraper.dto.response.TestScrapeResultDto;
+import com.example.webscraper.entity.ScrapingTask;
 import com.example.webscraper.entity.enums.TaskStatus;
 import com.example.webscraper.service.TaskService;
+import com.example.webscraper.service.scraper.ScraperEngineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +29,7 @@ import java.util.Map;
 public class TaskController {
 
     private final TaskService taskService;
+    private final ScraperEngineService scraperEngineService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> listTasks(
@@ -80,5 +86,30 @@ public class TaskController {
         TaskStatus status = TaskStatus.valueOf(statusStr.toUpperCase());
         TaskResponse response = taskService.updateTaskStatus(id, status);
         return ResponseEntity.ok(ApiResponse.success("Task status updated", response));
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<ApiResponse<TestScrapeResultDto>> testScrapeAdHoc(@Valid @RequestBody TestScrapeRequest request) {
+        TestScrapeResultDto result = scraperEngineService.testScrape(request);
+        return ResponseEntity.ok(ApiResponse.success("Test scrape preview completed", result));
+    }
+
+    @PostMapping("/{id}/test")
+    public ResponseEntity<ApiResponse<TestScrapeResultDto>> testScrapeExistingTask(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        ScrapingTask task = taskService.getTaskEntity(id);
+        ExtractionConfigDto config = taskService.deserializeConfig(task.getExtractionConfig());
+
+        TestScrapeRequest request = TestScrapeRequest.builder()
+                .sourceUrl(task.getSourceUrl())
+                .extractionConfig(config)
+                .limit(limit)
+                .timeoutSeconds(task.getTimeoutSeconds())
+                .build();
+
+        TestScrapeResultDto result = scraperEngineService.testScrape(request);
+        return ResponseEntity.ok(ApiResponse.success("Test scrape completed for task " + task.getName(), result));
     }
 }

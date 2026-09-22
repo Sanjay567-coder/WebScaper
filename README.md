@@ -21,7 +21,7 @@
 
 ## 📋 Table of Contents
 1. [🌟 Project Highlights](#-project-highlights)
-2. [📸 Application Screenshots](#-application-screenshots)
+2. [📸 Real Application Screenshots](#-real-application-screenshots)
 3. [🏗️ Architecture & Technology Stack](#-architecture--technology-stack)
 4. [🗄️ Database Schema & ER Diagram](#-database-schema--er-diagram)
 5. [⚡ Quick Start with Docker (Zero Manual DB Setup)](#-quick-start-with-docker-recommended)
@@ -45,31 +45,40 @@
 
 ---
 
-## 📸 Application Screenshots
+## 📸 Real Application Screenshots
 
-### 1. Dashboard Overview & Analytics
-The executive dashboard provides at-a-glance KPI metrics (Active Tasks, Total Records, Success Rate %, and Failed Runs), an interactive 7-day trend chart, record distribution, and recent run execution controls.
+### 1. Dashboard Overview & Real-Time Analytics
+The executive dashboard provides real-time KPI metrics (Active Tasks, Total Records, Success Rate %, and Failed Runs), an interactive 7-day trend chart, record distribution, and recent run execution controls.
 
 <p align="center">
-  <img src="docs/images/dashboard.png" alt="Dashboard View" width="850" style="border-radius: 8px;" />
+  <img src="docs/images/dashboard.png" alt="Dashboard View" width="850" style="border-radius: 8px; border: 1px solid #1e293b;" />
 </p>
 
 ---
 
-### 2. Scraping Task Builder with Live Test Preview
-Configure target URLs, select execution schedule presets, customize item containers, add dynamic field extraction selectors, and run instant **Test Scrape Previews** without saving invalid configurations.
+### 2. Administrator Authentication & Security
+Professional, centered authentication card with input validation, password visibility toggling, error state feedback, and seeded credentials hints.
 
 <p align="center">
-  <img src="docs/images/task_builder.png" alt="Task Builder & Live Test Scrape Preview" width="850" style="border-radius: 8px;" />
+  <img src="docs/images/login.png" alt="Admin Login Screen" width="850" style="border-radius: 8px; border: 1px solid #1e293b;" />
 </p>
 
 ---
 
-### 3. Scraped Data Explorer & Multi-Format Exporter
-Search, filter, inspect parsed structured JSON payloads with deep drawer inspector, verify cryptographic SHA-256 hashes, and export data to **CSV** or **JSON** with one click.
+### 3. Scraping Task Builder & Extraction Rules
+Configure target URLs, schedule presets (Hourly, Daily, or Custom Cron), dynamic CSS selector rows with data type mapping, and live Test Scrape Preview.
 
 <p align="center">
-  <img src="docs/images/data_explorer.png" alt="Scraped Data Explorer" width="850" style="border-radius: 8px;" />
+  <img src="docs/images/create_task.png" alt="Task Builder and Extraction Configuration" width="850" style="border-radius: 8px; border: 1px solid #1e293b;" />
+</p>
+
+---
+
+### 4. Scraped Data Explorer & Multi-Format Exporter
+Search, filter by task or date range, inspect parsed structured JSON payloads with deep drawer inspector, verify cryptographic SHA-256 hashes, and export data to **CSV** or **JSON** with one click.
+
+<p align="center">
+  <img src="docs/images/data_explorer.png" alt="Scraped Data Explorer" width="850" style="border-radius: 8px; border: 1px solid #1e293b;" />
 </p>
 
 ---
@@ -96,7 +105,7 @@ flowchart TD
         Repo[Spring Data JPA & Hibernate]
     end
 
-    subgraph Database["MySQL 8.0 Storage (Port: 3306)"]
+    subgraph Database["MySQL 8.0 Storage (Port: 3307)"]
         UsersTbl[(users)]
         TasksTbl[(scraping_tasks)]
         RecordsTbl[(scraped_records)]
@@ -190,13 +199,13 @@ cp .env.example .env
 
 ### 2. Start Full Stack
 ```bash
-docker-compose up --build -d
+docker-compose up -d
 ```
 
 ### 3. Access Services
 - **Frontend Dashboard**: [http://localhost:5173](http://localhost:5173)
 - **Backend REST API**: [http://localhost:8080/api](http://localhost:8080/api)
-- **MySQL Database**: `localhost:3306` (Database: `webscraper_db`, User: `scraper_user`, Pass: `scraper_pass`)
+- **MySQL Database**: `localhost:3307` (Database: `webscraper_db`, User: `scraper_user`, Pass: `scraper_pass`)
 
 To stop all containers:
 ```bash

@@ -1,0 +1,39 @@
+# Target build directories
+target/
+backend/target/
+build/
+dist/
+frontend/dist/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment files and credentials
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# IDE and editor files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*.log
+
+# Maven wrapper jar if not needed, but keep wrapper files
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Scraper downloaded runtime artifacts/logs
+logs/
+backend/logs/

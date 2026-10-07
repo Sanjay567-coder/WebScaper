@@ -87,7 +87,14 @@ export const Dashboard = () => {
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
+    return isNaN(date.getTime()) ? '—' : date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
   };
 
   if (isLoading) {

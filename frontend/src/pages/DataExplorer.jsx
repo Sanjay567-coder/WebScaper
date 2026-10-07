@@ -203,11 +203,14 @@ export const DataExplorer = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleString([], {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? '—' : date.toLocaleString([], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
     });
   };
 

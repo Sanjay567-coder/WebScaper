@@ -5,6 +5,7 @@ import com.example.webscraper.dto.config.ExtractionFieldDto;
 import com.example.webscraper.dto.request.TestScrapeRequest;
 import com.example.webscraper.dto.response.TestScrapeResultDto;
 import com.example.webscraper.exception.BadRequestException;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -14,7 +15,10 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 @Service
@@ -27,6 +31,34 @@ public class ScraperEngineService {
     @Value("${scraper.default-user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36}")
     private String defaultUserAgent;
 
+    private SSLSocketFactory trustAllSslSocketFactory;
+
+    @PostConstruct
+    public void init() {
+        this.trustAllSslSocketFactory = createTrustAllSslSocketFactory();
+    }
+
+    private SSLSocketFactory createTrustAllSslSocketFactory() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                    }
+            };
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            return sslContext.getSocketFactory();
+        } catch (Exception e) {
+            log.error("Failed to initialize permissive SSL socket factory: {}", e.getMessage());
+            return (SSLSocketFactory) SSLSocketFactory.getDefault();
+        }
+    }
+
     public TestScrapeResultDto testScrape(TestScrapeRequest request) {
         long startTime = System.currentTimeMillis();
         int timeoutMs = request.getTimeoutSeconds() != null ? request.getTimeoutSeconds() * 1000 : defaultTimeoutMs;
@@ -35,13 +67,17 @@ public class ScraperEngineService {
         try {
             validateUrl(request.getSourceUrl());
 
-            Connection.Response response = Jsoup.connect(request.getSourceUrl())
+            Connection connection = Jsoup.connect(request.getSourceUrl())
                     .userAgent(defaultUserAgent)
                     .timeout(timeoutMs)
                     .followRedirects(true)
-                    .ignoreHttpErrors(false)
-                    .execute();
+                    .ignoreHttpErrors(false);
 
+            if (trustAllSslSocketFactory != null) {
+                connection.sslSocketFactory(trustAllSslSocketFactory);
+            }
+
+            Connection.Response response = connection.execute();
             Document doc = response.parse();
             List<Map<String, Object>> extractedItems = extractDataFromDocument(doc, request.getExtractionConfig());
 
@@ -78,12 +114,16 @@ public class ScraperEngineService {
         int timeoutMs = timeoutSeconds > 0 ? timeoutSeconds * 1000 : defaultTimeoutMs;
         log.info("Fetching and scraping URL: {} with timeout {}ms", url, timeoutMs);
 
-        Document doc = Jsoup.connect(url)
+        Connection connection = Jsoup.connect(url)
                 .userAgent(defaultUserAgent)
                 .timeout(timeoutMs)
-                .followRedirects(true)
-                .get();
+                .followRedirects(true);
 
+        if (trustAllSslSocketFactory != null) {
+            connection.sslSocketFactory(trustAllSslSocketFactory);
+        }
+
+        Document doc = connection.get();
         return extractDataFromDocument(doc, config);
     }
 
